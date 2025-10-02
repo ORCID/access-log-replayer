@@ -1,0 +1,3 @@
+127.0.0.1 - - [02/Oct/2025 15:07:34] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [02/Oct/2025 15:07:34] code 404, message File not found
+127.0.0.1 - - [02/Oct/2025 15:07:34] "GET /solr/org/select?q=%28wibble&wt=xml&version=2.2 HTTP/1.1" 404 -

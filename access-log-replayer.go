@@ -2,15 +2,17 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"flag"
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
+
+	accesslog "github.com/nekrassov01/access-log-parser"
 )
 
 func main() {
-	inputFile := flag.String("input-file", "", "Path to ELF log file")
+	inputFile := flag.String("input-file", "", "Path to CLF log file")
 	httpHost := flag.String("http_host", "", "Target HTTP host, e.g. localhost:8983")
 	flag.Parse()
 
@@ -26,32 +28,43 @@ func main() {
 	}
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.HasPrefix(line, "#") || line == "" {
-			continue // skip comments and empty lines
+	handler := func(labels, values []string, isFirst bool) (string, error) {
+		var method, path string
+		for i, label := range labels {
+			if label == "method" {
+				method = values[i]
+			}
+			if label == "request_uri" {
+				path = values[i]
+			}
 		}
-
-		fields := strings.Fields(line)
-		if len(fields) < 5 {
-			continue // skip malformed lines
+		fmt.Printf("DEBUG: method='%s', path='%s'\n", method, path)
+		if method != "GET" || path == "" {
+			fmt.Println("DEBUG: Not a GET request or missing path, skipping")
+			return "", nil
 		}
-
-		method := fields[3]
-		url := fields[4]
-		if method != "GET" {
-			continue // only replay GET requests
-		}
-
-		fullURL := "http://" + *httpHost + url
+		fullURL := "http://" + *httpHost + path
+		fmt.Printf("DEBUG: Sending GET to %s\n", fullURL)
 		resp, err := http.Get(fullURL)
 		if err != nil {
 			fmt.Printf("Request to %s failed: %v\n", fullURL, err)
-			continue
+			return "", nil
 		}
 		fmt.Printf("%s -> %d\n", fullURL, resp.StatusCode)
 		resp.Body.Close()
+		return "", nil
+	}
+
+	opt := accesslog.Option{LineHandler: handler}
+	parser := accesslog.NewApacheCLFRegexParser(context.Background(), os.Stdout, opt)
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "" {
+			continue // skip empty lines
+		}
+		// ParseString will invoke the handler for each line
+		_, _ = parser.ParseString(line)
 	}
 
 	if err := scanner.Err(); err != nil {
