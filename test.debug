@@ -2,7 +2,7 @@ DEBUG: method='GET', path='/'
 DEBUG: Sending GET to http://localhost:8983/
 http://localhost:8983/ -> 200
 
-DEBUG: method='GET', path='/solr/org/select?q=%28wibble&wt=xml&version=2.2'
-DEBUG: Sending GET to http://localhost:8983/solr/org/select?q=%28wibble&wt=xml&version=2.2
-http://localhost:8983/solr/org/select?q=%28wibble&wt=xml&version=2.2 -> 404
+DEBUG: method='GET', path='/solr/profile/select?rows=1&q=test&wt=xml&version=2.2'
+DEBUG: Sending GET to http://localhost:8983/solr/profile/select?rows=1&q=test&wt=xml&version=2.2
+http://localhost:8983/solr/profile/select?rows=1&q=test&wt=xml&version=2.2 -> 404
 

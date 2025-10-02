@@ -17,15 +17,14 @@ sleep 2
 kill $SERVER_PID
 
 #git diff --quiet -- server.log
-git diff -- server.log
 
-git diff --quiet -- test.debub
+git diff --quiet -- test.debug
 
-# If git diff returns a non-zero exit code, the files have changed
-#if [ $? -ne 0 ]; then
-#    echo "FATAL: example.properties.j2 or example.properties.yml or example.properties.env.j2 have changed"
-#    exit 1
-#else
-#    echo "No changes in example.properties.j2 or example.properties.yml or example.properties.env.j2"
-#fi
+#If git diff returns a non-zero exit code, the files have changed
+if [ $? -ne 0 ]; then
+    echo "FATAL: output has changed"
+    exit 1
+else
+    echo "No changes in output"
+fi
 
